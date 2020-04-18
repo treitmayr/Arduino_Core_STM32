@@ -672,7 +672,12 @@ void HardwareTimer::setMode(uint32_t channel, TimerModes_t mode, PinName pin)
       if ((mode == TIMER_INPUT_CAPTURE_RISING) || (mode == TIMER_INPUT_CAPTURE_FALLING) \
           || (mode == TIMER_INPUT_CAPTURE_BOTHEDGE) || (mode == TIMER_INPUT_FREQ_DUTY_MEASUREMENT)) {
         // on F1 family, input alternate function must configure GPIO in input mode
-        pinMode(pin, INPUT);
+        uint32_t function = pinmap_find_function(pin, PinMap_PWM);
+        if (function != (uint32_t)NC) {
+          // force input mode
+          function = (function & ~STM_PIN_FUNCTION_BITS) | (STM_MODE_INPUT << STM_PIN_FUNCTION_SHIFT);
+          pin_function(pin, function);
+        }
       } else
 #endif
       {
